@@ -12,10 +12,11 @@ https://www.agoda.com/
 */
 const {test, expect} = require('@playwright/test');
 
+//test.use({ storageState: 'auth.json' });
 
 test.only("Agoda - Membership Registration", async ({browser})=>
 {
-    const email = ""
+    const email = "manfewhug@pngk.uk"
     
     const context = await browser.newContext()
     const page = await context.newPage()
@@ -50,6 +51,9 @@ test.only("Agoda - Membership Registration", async ({browser})=>
 
     const page2 = await page.context().newPage()
     await page2.goto(InstAddr)
+
+    //FRESH INSTADDR LOGIN
+    
     await page2.getByText("Config").click()
     await page2.locator("a[data-icon='power']").click()
     await page2.locator("#link_loginform").click()
@@ -59,24 +63,44 @@ test.only("Agoda - Membership Registration", async ({browser})=>
     await page2.locator("#area-confirm-dialog-button-ok").click()
     await page2.getByText(email).click()
     await page2.locator("a[data-icon='mail']").click()
-    let emailContent = await page2.locator("a[id*='link_maildata']").first().textContent()
+    let emailContent = await page2.locator("div[id*='area_mail_title_']").first().textContent()
+    
+
+    //INSTADDR WITH AUTH.JSON LOGIN (Remembers Credentials)
+    /*
+    await page2.locator("#search-basic").fill(email)
+    await page2.press('#search-basic', 'Enter');
+    let emailContent = await page2.locator("div[id*='area_mail_title_']").first().textContent()
+    */
+
+
     console.log(emailContent)
+
+    await context.storageState({ path: 'auth.json' });//Save login credentials of InstAddr?
 
     //RETRIEVE THE OTP FROM THE EMAIL HEADER
     const emailHeaderArr1 = emailContent.split("is")
-    const otp = emailHeaderArr1[1].trim()
+    const otpStr = emailHeaderArr1[1].trim()
+    const otp = parseInt(otpStr)
+
+    let arrNums = otpStr.toString().split('').map(Number);
+    console.log("arrNums: "+arrNums);
+
+    console.log("OTP after trim:"+otp)
+    console.log("OTP length:"+otpStr.length)
 
     await expect(iframePage.locator("div[data-cy='form-heading']")).toContainText("Sign in with OTP")
 
-    for(i = 0; i < otp.length < i++;)
-    {
-        await iframePage.locator(`input[name='otp-${i}']`).pressSequentially(otp[i])//This works
-    }
+    await iframePage.locator("input[name='otp-0']").pressSequentially(otpStr[0], {delay:150})
+    await iframePage.locator("input[name='otp-1']").pressSequentially(otpStr[1], {delay:150})
+    await iframePage.locator("input[name='otp-2']").pressSequentially(otpStr[2], {delay:150})
+    await iframePage.locator("input[name='otp-3']").pressSequentially(otpStr[3], {delay:150})
+    await iframePage.locator("input[name='otp-4']").pressSequentially(otpStr[4], {delay:150})
+    await iframePage.locator("input[name='otp-5']").pressSequentially(otpStr[5], {delay:150})
 
-    //await iframePage.locator("input[name='otp-0']").pressSequentially(otp[])//This works
     await iframePage.locator("button[data-cy='unified-auth-otp-continue-button']").click()
+
     await page.pause()
-    
     
 });
 
