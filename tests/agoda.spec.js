@@ -12,11 +12,40 @@ https://www.agoda.com/
 */
 const {test, expect} = require('@playwright/test');
 
-//test.use({ storageState: 'auth.json' });
 
-test.only("Agoda - Membership Registration", async ({browser})=>
+const user = 
 {
-    const email = "manfewhug@pngk.uk"
+    loginEmail: "sativel@hotmail.com",
+    loginPassword: "Newpassword1",
+    userName: "Sativel N."
+
+}
+
+test.only("Agoda - Login - Created Account with successful first-time Login", async ({page})=>
+{
+    await page.goto("https://www.agoda.com/")
+    const agodaLogo = page.locator(".cxsKGP")
+    await expect(agodaLogo).toBeVisible()
+
+    await page.getByRole("button", {name: "Sign in"}).click()
+    const iframePage = page.frameLocator("iframe[title='Universal login']")
+    await iframePage.getByPlaceholder("id@email.com").fill(user.loginEmail)
+    await iframePage.getByRole("button", {name: "Continue"}).click()
+    await iframePage.getByRole("button", {name: "Use Password"}).click()
+    await iframePage.locator("#password").fill(user.loginPassword)
+    await iframePage.getByRole("button", {name: "Sign in", exact: true}).click()
+
+    await expect(page.locator("span[data-element-name='user-name'] p")).toContainText(user.userName)
+
+    await page.pause()
+});
+
+
+//test.use({ storageState: 'auth.json' });
+//TODO: It works up until the part where we need to click "Not Now" to refuse passkey setup. But this code can be improved I think
+test("Agoda - Membership Registration", async ({browser})=>
+{
+    const email = "toefix648@pngk.uk"
     
     const context = await browser.newContext()
     const page = await context.newPage()
@@ -47,7 +76,6 @@ test.only("Agoda - Membership Registration", async ({browser})=>
     const InstAddr = "https://m.kuku.lu/recv.php"
     const InstAddr_AccountID = "254884629175"
     const InstAddr_Pasword = "wJVQ#:bu0FIAna"
-
 
     const page2 = await page.context().newPage()
     await page2.goto(InstAddr)
@@ -90,14 +118,12 @@ test.only("Agoda - Membership Registration", async ({browser})=>
     console.log("OTP length:"+otpStr.length)
 
     await expect(iframePage.locator("div[data-cy='form-heading']")).toContainText("Sign in with OTP")
-
     await iframePage.locator("input[name='otp-0']").pressSequentially(otpStr[0], {delay:150})
     await iframePage.locator("input[name='otp-1']").pressSequentially(otpStr[1], {delay:150})
     await iframePage.locator("input[name='otp-2']").pressSequentially(otpStr[2], {delay:150})
     await iframePage.locator("input[name='otp-3']").pressSequentially(otpStr[3], {delay:150})
     await iframePage.locator("input[name='otp-4']").pressSequentially(otpStr[4], {delay:150})
     await iframePage.locator("input[name='otp-5']").pressSequentially(otpStr[5], {delay:150})
-
     await iframePage.locator("button[data-cy='unified-auth-otp-continue-button']").click()
 
     await page.pause()
@@ -108,13 +134,14 @@ test.only("Agoda - Membership Registration", async ({browser})=>
 //TODO: WORKS, BUT SOME LINES SHOULD BE OPTIMIZED TO BE MORE GENERIC SO IT CAN WORK REGARDLESS OF SEARCH CRITERIA
 test("Agoda - Language & Currency Select", async({browser, page})=>
 {
-    await page.goto("https://www.agoda.com/")//Open site
-    const agodaLogo = page.locator(".cxsKGP")
-    await expect(agodaLogo).toBeVisible()//Wait until the page is loaded by checking if the "Agoda" logo is loaded
 
     /*Language Select*/
     const languageCode = "jp"//Use Inspector to check for the lang variable for the country code
     const homepageHeaderText = "もっとおトクに世界を旅しよう"//Check the Homepage header text for the value
+
+    await page.goto("https://www.agoda.com/")//Open site
+    const agodaLogo = page.locator(".cxsKGP")
+    await expect(agodaLogo).toBeVisible()//Wait until the page is loaded by checking if the "Agoda" logo is loaded
 
     await page.locator(".Flag__StyledCdnIcon-sc-nifs7d-0").click()
     await page.locator(`p[lang='${languageCode}']`).click()
@@ -152,26 +179,3 @@ test("Agoda - Language & Currency Select", async({browser, page})=>
     await page2.pause()
 
 });
-
-
-//CODEGEN CODE
-/*
-import { test, expect } from '@playwright/test';
-
-test('test', async ({ page }) => {
-  await page.goto('https://m.kuku.lu/recv.php');
-  await page.getByRole('img').nth(3).click();
-  await page.getByRole('button', { name: 'Account' }).click();
-  await page.getByRole('button', { name: 'Sign in to another account' }).click();
-  await page.getByRole('textbox', { name: 'AccountID' }).click();
-  await page.getByRole('textbox', { name: 'AccountID' }).fill('254884629175');
-  await page.getByRole('textbox', { name: 'Password' }).click();
-  await page.getByRole('textbox', { name: 'Password' }).fill('wJVQ#:bu0FIAna');
-  await page.getByRole('button', { name: 'Login' }).click();
-  await page.getByRole('button', { name: 'Yes' }).click();
-  await page.getByRole('link').filter({ hasText: /^$/ }).nth(4).click();
-  await page.getByRole('button', { name: 'Your email OTP for Agoda is 327563 14:16 (20day) | Agoda <no-reply@account.' }).click();
-  await page.locator('iframe[name="area_maildata_iframe_42604354"]').contentFrame().getByRole('cell', { name: 'Hi, your Agoda OTP is 327563. It\'s valid for 10 minutes.', exact: true }).click();
-});
-
-*/
